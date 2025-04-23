@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>be25b15f-8c11-4710-81a7-fcd0f05edf70</UserSecretsId>
+    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FIAP.PosTech.Hackathon.Application\FIAP.PosTech.Hackathon.Application.csproj" />
+    <ProjectReference Include="..\FIAP.PosTech.Hackathon.Infrastructure.Data\FIAP.PosTech.Hackathon.Infrastructure.Data.csproj" />
+    <ProjectReference Include="..\FIAP.PosTech.Hackathon.Infrastructure\FIAP.PosTech.Hackathon.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

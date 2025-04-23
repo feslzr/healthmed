@@ -1,0 +1,103 @@
+name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.rr)
+
+trigger:
+  - main
+
+stages:
+  - stage: "ParallelBuilds"
+    displayName: "Parallel Builds"
+    jobs:
+      - job: BuildAndTest
+        displayName: "Build & Test"
+        pool:
+          vmImage: 'ubuntu-latest' #Cloud
+          #name: Default #Local
+        steps:
+
+        - task: UseDotNet@2
+          displayName: 'Use .NET SDK 9.0.x'
+          inputs:
+            packageType: sdk
+            version: 9.0.x
+            includePreviewVersions: false
+            
+        - task: DotNetCoreCLI@2
+          displayName: 'Restore Project'
+          inputs:
+            command: restore
+            projects: '**/*.sln'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Build Project'
+          inputs:
+            command: build
+            projects: '**/*.csproj'
+            arguments: '--no-restore --configuration Release'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Publish Project'
+          inputs:
+            command: publish
+            projects: '**/*.csproj'
+            publishWebProjects: true
+            arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+            zipAfterPublish: true
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Run Unit Tests'
+          inputs:
+            command: test
+            projects: '**/*tests/*.csproj'
+            arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover'
+          continueOnError: true
+
+        - task: PublishTestResults@2
+          displayName: 'Publish Unit Tests Result'
+          inputs:
+            testRunner: 'VSTest'
+            testResultsFiles: '$(Agent.TempDirectory)/**/*.trx'
+            mergeTestResults: true
+          continueOnError: true
+
+        - task: CopyFiles@2
+          displayName: 'Copy Application Artifacts'
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)'
+            Contents: |
+              src/FIAP.PosTech.Hackathon.API/web.config
+            TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Application Artifacts'
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'k8s'
+            publishLocation: 'Container'
+
+  - stage: 'Production'
+    displayName: 'Deploy PRD'
+    dependsOn: ParallelBuilds
+    condition: succeeded()
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: 'ubuntu-latest' #Cloud
+          #name: Default #Local
+        environment: production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: k8s
+
+                - task: AzureWebApp@1
+                  displayName: 'Deploy to Azure Web App'
+                  inputs:
+                    azureSubscription: 'Azure-HealthMed'
+                    appName: 'healthmed'
+                    appType: 'webApp' #Windows
+                    #appType: 'webAppLinux' #Linux
+                    deployToSlotOrASE: false
+                    package: '$(Pipeline.Workspace)/k8s/Release/*.zip'
+                    runtimeStack: 'DOTNETCORE|9.0'

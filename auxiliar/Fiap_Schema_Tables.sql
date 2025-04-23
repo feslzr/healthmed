@@ -1,0 +1,189 @@
+CREATE SCHEMA Fiap;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Account](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [varchar](255) NOT NULL,
+	[Password] [varchar](255) NOT NULL,
+	[CreatedAt] [datetime] NOT NULL,
+	[UpdatedAt] [datetime] NOT NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Account] ADD PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Appointment](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[PatientId] [int] NOT NULL,
+	[ScheduleId] [int] NOT NULL,
+	[StatusId] [int] NOT NULL,
+	[Justification] [varchar](max) NULL,
+	[CreatedAt] [datetime] NOT NULL,
+	[UpdatedAt] [datetime] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Appointment] ADD PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Appointment]  WITH CHECK ADD  CONSTRAINT [FK_Appointment_Patient] FOREIGN KEY([PatientId])
+REFERENCES [Fiap].[Patient] ([Id])
+GO
+ALTER TABLE [Fiap].[Appointment] CHECK CONSTRAINT [FK_Appointment_Patient]
+GO
+ALTER TABLE [Fiap].[Appointment]  WITH CHECK ADD  CONSTRAINT [FK_Appointment_Schedule] FOREIGN KEY([ScheduleId])
+REFERENCES [Fiap].[Schedule] ([Id])
+GO
+ALTER TABLE [Fiap].[Appointment] CHECK CONSTRAINT [FK_Appointment_Schedule]
+GO
+ALTER TABLE [Fiap].[Appointment]  WITH CHECK ADD  CONSTRAINT [FK_Appointment_Status] FOREIGN KEY([StatusId])
+REFERENCES [Fiap].[Status] ([Id])
+GO
+ALTER TABLE [Fiap].[Appointment] CHECK CONSTRAINT [FK_Appointment_Status]
+GO
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Doctor](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AccountId] [int] NOT NULL,
+	[DocumentNumber] [varchar](255) NOT NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Doctor] ADD PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Doctor]  WITH CHECK ADD  CONSTRAINT [FK_Doctor_Account] FOREIGN KEY([AccountId])
+REFERENCES [Fiap].[Account] ([Id])
+GO
+ALTER TABLE [Fiap].[Doctor] CHECK CONSTRAINT [FK_Doctor_Account]
+GO
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Patient](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AccountId] [int] NOT NULL,
+	[DocumentNumber] [varchar](50) NOT NULL,
+	[Email] [varchar](255) NOT NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Patient] ADD  CONSTRAINT [PK_Patient] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Patient]  WITH CHECK ADD  CONSTRAINT [FK_Patient_Account] FOREIGN KEY([AccountId])
+REFERENCES [Fiap].[Account] ([Id])
+GO
+ALTER TABLE [Fiap].[Patient] CHECK CONSTRAINT [FK_Patient_Account]
+GO
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Schedule](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ServiceId] [int] NOT NULL,
+	[Datetime] [datetime] NOT NULL,
+	[CreatedAt] [datetime] NOT NULL,
+	[UpdatedAt] [datetime] NOT NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Schedule] ADD PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Schedule]  WITH CHECK ADD  CONSTRAINT [FK_Schedule_Service] FOREIGN KEY([ServiceId])
+REFERENCES [Fiap].[Service] ([Id])
+GO
+ALTER TABLE [Fiap].[Schedule] CHECK CONSTRAINT [FK_Schedule_Service]
+GO
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Service](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[DoctorId] [int] NOT NULL,
+	[SpecialtyId] [int] NOT NULL,
+	[Price] [decimal](18, 0) NOT NULL,
+	[CreatedAt] [datetime] NOT NULL,
+	[UpdatedAt] [datetime] NOT NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Service] ADD PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Service]  WITH CHECK ADD  CONSTRAINT [FK_DoctorSpecialty_Doctor] FOREIGN KEY([DoctorId])
+REFERENCES [Fiap].[Doctor] ([Id])
+GO
+ALTER TABLE [Fiap].[Service] CHECK CONSTRAINT [FK_DoctorSpecialty_Doctor]
+GO
+ALTER TABLE [Fiap].[Service]  WITH CHECK ADD  CONSTRAINT [FK_DoctorSpecialty_Specialty] FOREIGN KEY([SpecialtyId])
+REFERENCES [Fiap].[Specialty] ([Id])
+GO
+ALTER TABLE [Fiap].[Service] CHECK CONSTRAINT [FK_DoctorSpecialty_Specialty]
+GO
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Specialty](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Description] [varchar](255) NOT NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Specialty] ADD PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Fiap].[Status](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Description] [varchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [Fiap].[Status] ADD  CONSTRAINT [PK_Status] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+GO
+
